@@ -1,0 +1,82 @@
+/////////////////////////////
+// Values From Params File //
+/////////////////////////////
+
+N := {{ N }}
+Ms := {{ Ms }}
+I_1 := {{ I1 }}
+I_2 := {{ I2 }}
+alpha = {{ Alpha }}
+DimensionlessField := {{ DimensionlessField }}
+DimensionlessEAmplitude := {{ DimensionlessEAmplitude }}
+RelaxTime := {{ RelaxTime }}
+SimulationTime := {{ SimulationTime }}
+AbsorbingSize := {{ AbsorbingSize }}
+Delta := {{ DiscretisationSize }} * sqrt(I_2 / I_1)
+print(Delta)
+
+
+////////////////////////////////////////
+// Calculate Dimensionless Quantities //
+////////////////////////////////////////
+
+FieldMultiple := I_1 * I_1 / (Ms * I_2)
+TimeMultiple := Ms * I_2 / (GammaLL*I_1*I_1)
+EredMultiple := pow(I_1, 1.5) / pow(I_2, 0.5)
+EFieldOmega := {{ EFieldOmega }} / TimeMultiple
+
+
+/////////////////////
+// Set Up Geometry //
+/////////////////////
+
+SetCellSize(Delta, Delta, Delta)
+SetGridSize(N, N, 1)
+
+
+//////////////////////////
+// Absorbing Boundaries //
+//////////////////////////
+
+OuterRegion := Rect(N*Delta, N*Delta)
+InnerRegion := Rect((N-2*AbsorbingSize)*Delta, (N-2*AbsorbingSize)*Delta)
+HighDampingRegion := OuterRegion.Sub(InnerRegion)
+DefRegion(1, HighDampingRegion)
+Alpha.SetRegion(1, 1.)
+
+
+///////////////////////
+// Set Up Energetics //
+///////////////////////
+
+Msat = Ms
+I1 = I_1
+I2 = I_2
+EnableDemag = False
+B_ext = Vector(0, 0, DimensionlessField*FieldMultiple)
+EAmplitude := DimensionlessEAmplitude*EredMultiple
+
+
+////////////////////////////////
+// Load Initial Configuration //
+////////////////////////////////
+
+m = BlochSkyrmion(1, -1)
+
+
+////////////////////
+// Run Simulation //
+////////////////////
+
+// Ered is the the dimensionful electric field, equal to E * P_E * a, where P_E is the electric polarization density and a is the lattice constant
+Ered = EAmplitude
+
+Minimize()
+Run(RelaxTime * TimeMultiple)
+
+Ered = EAmplitude*Cos(EFieldOmega*t)
+
+SaveInterval := {{ TimeDiscretisation }}*TimeMultiple
+AutoSave(m, SaveInterval)
+
+Run(SimulationTime*TimeMultiple)

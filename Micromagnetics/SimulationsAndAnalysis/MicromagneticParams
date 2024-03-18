@@ -1,0 +1,11 @@
+N=128
+Ms=1e6
+I1=1e-12
+I2=1e-29
+alpha=0.01
+dimensionlessfield=1.
+relaxtime=0
+simulationtime=1000
+absorbingsize=5
+discretisationsize=0.3
+timediscretisation=0.1

@@ -1,0 +1,5 @@
+text.usetex : True
+lines.markersize : 10
+axes.labelsize : 26
+xtick.labelsize : 16
+ytick.labelsize : 16
